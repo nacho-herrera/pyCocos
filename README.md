@@ -13,7 +13,7 @@
 To install *pyCocos*, you can use the following command:
 
 ```shell
-pip install git+https://
+git+https://github.com/nacho-herrera/pyCocos.git
 ```
 
 ## API Credentials
