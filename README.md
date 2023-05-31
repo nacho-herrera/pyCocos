@@ -25,8 +25,8 @@ To use this library, you need to have the correct authentication credentials and
 The library has the following dependency:
 
 ```
-requests==2.28.2
-simplejson==3.19.1
+requests>=2.31.0
+simplejson>=3.19.1
 ```
 ## Features
 
