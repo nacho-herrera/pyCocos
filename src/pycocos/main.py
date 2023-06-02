@@ -23,7 +23,7 @@ from .components import (
 
 
 class Cocos:
-    headers = {
+    headers: dict[str, str] = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
         "Content-Type": "application/json",
     }
@@ -74,12 +74,12 @@ class Cocos:
             Exception: If the access token is not found in the API response.
         """
         params = "grant_type=password"
-        payload = json.dumps({"email": self.email, "password": self.password})
+        payload: str = json.dumps({"email": self.email, "password": self.password})
 
         self.client.update_session_headers(self.headers)
 
-        response = self.client.get_token(params=params, data=payload)
-        
+        response: Dict[str, Any] = self.client.get_token(params=params, data=payload)
+
         if "error" in response.keys():
             raise Exception(f'Error: {response["error_description"]}')
 
@@ -97,7 +97,7 @@ class Cocos:
 
         """
 
-        headers_update = {
+        headers_update: dict[str, str] = {
             "authorization": f"Bearer {self.access_token}",
             "recaptcha-token": self.recaptcha_token,
             "x-account-id": self.account_number,
@@ -174,16 +174,16 @@ class Cocos:
         Raises:
             Exception: If there is an error while retrieving the portfolio information.
         """
-        response = self.client.get_portfolio()
+        response: Dict[str, Any] = self.client.get_portfolio()
         return response
 
-    def funds_available(self) -> Dict[str, float]:
+    def funds_available(self) -> Dict[str, Dict[str, float]]:
         """Retrieves the available funds for trading in T+0, T+1, and T+2 settlement dates.
 
         This method calls the API to fetch the available funds that can be used for trading on different settlement dates.
 
         Returns:
-            Dict[str, float]: A dictionary containing the available funds for each settlement date.
+            Dict[str, Dict[str, float]: A dictionary containing the available funds for each settlement date.
 
         Note:
             The returned dictionary contains key-value pairs, where the keys represent the settlement dates (e.g., T+0, T+1, T+2),
@@ -240,6 +240,7 @@ class Cocos:
 
         # Parameters validation
         required_fields = [("date_from", date_from, str), ("date_to", date_to, str)]
+
         self._check_fields(required_fields)
 
         return self.client.get_account_movements(date_from, date_to)
@@ -295,7 +296,7 @@ class Cocos:
         Args:
             cbu (str): The CBU/CVU of the new bank account.
             cuit (str): The CUIT (tax identification number) of the account owner.
-            currency (Currencies): The currency of the new bank account.
+            currency (Currency): The currency of the new bank account.
 
         Returns:
             Dict[str, Any]: A dictionary containing the response from the API.
@@ -314,8 +315,10 @@ class Cocos:
         self._check_fields(required_fields)
 
         # Create payload object
-        payload = json.dumps({"cbu_cvu": cbu, "cuit": cuit, "currency": currency.value})
-        response = self.client.submit_new_bank_account(data=payload)
+        payload: str = json.dumps(
+            {"cbu_cvu": cbu, "cuit": cuit, "currency": currency.value}
+        )
+        response: Dict[str, Any] = self.client.submit_new_bank_account(data=payload)
         return response
 
     def withdraw_funds(
@@ -327,7 +330,7 @@ class Cocos:
         currency will be transferred to the provided bank account (CBU/CVU).
 
         Args:
-            currency (Currencies): The currency of the funds to withdraw.
+            currency (Currency): The currency of the funds to withdraw.
             amount (str): The amount of funds to withdraw.
             cbu_cvu (str): The bank account (CBU/CVU) to transfer the funds to.
 
@@ -406,7 +409,7 @@ class Cocos:
             raise ApiException(f"Not enough money to purchase")
 
         # Create payload object
-        payload = {
+        payload: Dict[str, str] = {
             "type": order_type.value,
             "side": self.order_sides.BUY.value,
             "quantity": quantity,
@@ -414,7 +417,7 @@ class Cocos:
             "price": price,
         }
 
-        response = self.client.submit_order(json=payload)
+        response: Dict[str, Any] = self.client.submit_order(json=payload)
         if "success" in response.keys():
             self._add_order(response["Orden"])
         return response
@@ -454,7 +457,7 @@ class Cocos:
             raise ApiException(f"Not enough stocks to sell")
 
         ## Create Payload object
-        payload = {
+        payload: Dict[str, str] = {
             "type": order_type.value,
             "side": self.order_sides.SELL.value,
             "quantity": quantity,
@@ -462,7 +465,7 @@ class Cocos:
             "price": price,
         }
 
-        response = self.client.submit_order(json=payload)
+        response: Dict[str, Any] = self.client.submit_order(json=payload)
         return response
 
     def place_repo_order(
@@ -495,7 +498,7 @@ class Cocos:
         self._check_fields(required_fields)
 
         # Create payload object
-        payload = json.dumps(
+        payload: str = json.dumps(
             {
                 "currency": currency.value,
                 "amount": amount,
@@ -504,7 +507,7 @@ class Cocos:
             }
         )
 
-        response = self.client.submit_repo_order(data=payload)
+        response: Dict[str, Any] = self.client.submit_repo_order(data=payload)
         return response
 
     def cancel_order(self, order_number: str) -> Dict[str, Any]:
@@ -526,17 +529,19 @@ class Cocos:
         self._check_fields(required_fields)
 
         # Retrieve order information
-        order = self.order_status(order_number)
+        order: Dict[str, Any] = self.order_status(order_number)  # type: ignore
 
         # Create payload object
-        payload = json.dumps(
+        payload: str = json.dumps(
             {"instrument": order["instrument"], "ticker": order["ticker"]}
         )
 
-        response = self.client.cancel_order(order_number, data=payload)
+        response: Dict[str, Any] = self.client.cancel_order(order_number, data=payload)
         return response
 
-    def order_status(self, order_number: str = "") -> Dict[str, Any]:
+    def order_status(
+        self, order_number: str = ""
+    ) -> Dict[str, Any] | List[Dict[str, Any]]:
         """Calls the API to retrieve order status information.
 
         This method retrieves the status information of one or more orders from the API. If an `order_number` is provided,
@@ -596,7 +601,7 @@ class Cocos:
 
         Args:
             ticker (str): The ticker symbol to retrieve the price data for.
-            segment (Segments): The segment of the ticker.
+            segment (Segment): The segment of the ticker.
 
         Returns:
             List[Dict[str, Any]]: A list of dictionaries containing the snapshot price data for all possible settlement dates of the ticker.
@@ -604,7 +609,10 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [("ticker", ticker, str), ("segment", segment, Segment)]
+        required_fields = [
+            ("ticker", ticker, str),
+            ("segment", segment, Segment),
+        ]
         self._check_fields(required_fields)
 
         return self.client.get_tickers(ticker, segment.value)
@@ -623,11 +631,11 @@ class Cocos:
         settlement, currency, and segment.
 
         Args:
-            instrument_type (InstrumentTypes): The category type of the instruments.
-            instrument_subtype (InstrumentSubTypes): The category subtype of the instruments.
+            instrument_type (InstrumentType): The category type of the instruments.
+            instrument_subtype (InstrumentSubType): The category subtype of the instruments.
             settlement (Settlements): The settlement type for the instruments.
-            currency (Currencies): The currency for the instruments.
-            segment (Segments): The segment for the instruments.
+            currency (Currency): The currency for the instruments.
+            segment (Segment): The segment for the instruments.
 
         Returns:
             List[Dict[str, Any]]: A list of dictionaries containing the instrument information for the selected instruments.
@@ -678,11 +686,11 @@ class Cocos:
         settlement, currency, segment, page number, and items per page.
 
         Args:
-            instrument_type (InstrumentTypes): The category type of the instruments.
-            instrument_subtype (InstrumentSubTypes): The category subtype of the instruments.
-            settlement (Settlements): The settlement type for the instruments.
-            currency (Currencies): The currency for the instruments.
-            segment (Segments): The segment for the instruments.
+            instrument_type (InstrumentType): The category type of the instruments.
+            instrument_subtype (InstrumentSubType): The category subtype of the instruments.
+            settlement (Settlement): The settlement type for the instruments.
+            currency (Currency): The currency for the instruments.
+            segment (Segment): The segment for the instruments.
             page (int): The page number to retrieve.
             size (int): The number of items per page.
 
@@ -723,7 +731,7 @@ class Cocos:
             size,
         )
 
-    def get_recommended_tickers(self) -> List[Dict[str, Any]]:
+    def get_recommended_tickers(self) -> Dict[str, Any]:
         """Calls the API to retrieve the list of recommended tickers from the home page.
 
         This method retrieves the list of recommended tickers provided on the home page of the application.
@@ -739,7 +747,7 @@ class Cocos:
 
         return self.client.get_home_list()
 
-    def get_favorites_tickers(self) -> List[Dict[str, Any]]:
+    def get_favorites_tickers(self) -> Dict[str, Any]:
         """Calls the API to retrieve the list of favorite instruments from the home page.
 
         This method retrieves the list of favorite instruments that have been saved by the user on the home page of the application.
@@ -755,7 +763,7 @@ class Cocos:
 
         return self.client.get_my_list()
 
-    def search_ticker(self, query: str) -> Dict[str, Any]:
+    def search_ticker(self, query: str) -> List[Dict[str, Any]]:
         """Calls the API to search for a ticker by name.
 
         This method allows searching for a ticker by providing a query string representing the name or part of the name of the ticker.
@@ -765,7 +773,7 @@ class Cocos:
             query (str): The query string representing the ticker name to search.
 
         Returns:
-            Dict[str, Any]: The API response with the search results.
+            List[Dict[str, Any]]: The API response with the search results.
 
         Raises:
             ValueError: If the query string is less than 2 characters long.
@@ -818,7 +826,7 @@ class Cocos:
 
         return self.client.get_instrument_rules()
 
-    def instrument_types_and_subtypes(self) -> Dict[str, Any]:
+    def instrument_types_and_subtypes(self) -> List[Dict[str, Any]]:
         """Calls the API to retrieve the types and subtypes of available instruments.
 
         This method retrieves information about the different types and subtypes of instruments
@@ -905,7 +913,7 @@ class Cocos:
     ## MISC ##
     ##########
 
-    def get_ads_carrousel(self) -> Dict[str, Any]:
+    def get_ads_carrousel(self) -> List[Dict[str, Any]]:
         """Calls API to retrieve the carousel ads.
 
         The carousel ads are a collection of advertisements displayed in a carousel format.
@@ -921,7 +929,7 @@ class Cocos:
 
         return self.client.get_carrousel()
 
-    def get_news(self) -> Dict[str, Any]:
+    def get_news(self) -> List[Dict[str, Any]]:
         """Calls API to retrieve news articles.
 
         This method calls the API to fetch the latest news articles. The returned news articles
@@ -937,7 +945,7 @@ class Cocos:
 
         return self.client.get_news()
 
-    def get_cocos_university_articles(self) -> Dict[str, Any]:
+    def get_cocos_university_articles(self) -> List[Dict[str, Any]]:
         """Calls API to retrieve articles from Cocos University.
 
         This method calls the API to fetch articles from Cocos University, which provides educational content
@@ -973,8 +981,8 @@ class Cocos:
         Args:
             ticker (str): Ticker symbol of the instrument.
             settlement (Settlements): Settlement date of the instrument.
-            currency (Currencies): Currency of the instrument.
-            segment (Segments, optional): Segment of the instrument. Defaults to Segments.DEFAULT.
+            currency (Currency): Currency of the instrument.
+            segment (Segment, optional): Segment of the instrument. Defaults to Segment.DEFAULT.
 
         Returns:
             str: The long ticker representing the ticker and settlement date.
@@ -991,17 +999,17 @@ class Cocos:
                 - <CURRENCY> represents the currency code.
 
         Examples:
-            long_ticker("AAPL", Settlements.T1, Currencies.PESOS) returns "AAPL-0002-C-CT-ARS"
-            long_ticker("GOOGD", Settlements.T0, Currencies.DOLAR_MEP) returns "GOOGD-0001-C-CT-USD"
-            long_ticker("GFGC500.JU", Settlements.T2, Currencies.PESOS, Segments.OPTIONS) returns "GFGC500.JU-0001-O-CT-ARS"
+            long_ticker("AAPL", Settlements.T1, Currency.PESOS) returns "AAPL-0002-C-CT-ARS"
+            long_ticker("GOOGD", Settlements.T0, Currency.DOLAR_MEP) returns "GOOGD-0001-C-CT-USD"
+            long_ticker("GFGC500.JU", Settlements.T2, Currency.PESOS, Segment.OPTIONS) returns "GFGC500.JU-0001-O-CT-ARS"
 
         """
 
         if segment is Segment.FCI:
             return ticker.upper()
 
-        _settlement = self._get_byma_settlement(settlement)
-        _currency = self._get_byma_currency(currency)
+        _settlement: str = self._get_byma_settlement(settlement)
+        _currency: str = self._get_byma_currency(currency)
 
         return f"{ticker.upper()}-{_settlement}-{segment.value}-CT-{_currency}"
 
@@ -1021,11 +1029,16 @@ class Cocos:
 
         settlement = self._get_cocos_settlement(settlement)
         segment = self._get_cocos_segment(segment)
+        if not settlement:
+            return False
+        if not segment:
+            return False
+
         instrument_code = self._find_instrument_code(long_ticker)
         price_factor = self._get_price_factor(instrument_code, long_ticker, segment)
 
         available_funds = self.funds_available()
-        available_at_settlement_currency = available_funds[settlement.value][
+        available_at_settlement_currency: float = available_funds[settlement.value][
             currency.lower()
         ]
         order_total = float(quantity) * float(price) / price_factor
@@ -1044,12 +1057,14 @@ class Cocos:
 
         Returns:
             bool: True if there are sufficient stocks, False otherwise.
-        """        
+        """
         settlement = long_ticker.split("-")[1]
         settlement = self._get_cocos_settlement(settlement)
         available_stocks = self.stocks_available(long_ticker)
-        available_at_settlement = available_stocks.get(settlement.value, 0)
+        if not settlement:
+            return False
 
+        available_at_settlement = available_stocks.get(settlement.value, 0)
         return available_at_settlement >= float(quantity)
 
     def _find_instrument_code(self, long_ticker: str) -> str:
@@ -1060,15 +1075,17 @@ class Cocos:
             long_ticker (str): The long ticker of the instrument.
 
         Returns:
-            str: The instrument code, or None if not found.
+            str: The instrument code, or "" if not found.
         """
-        ticker_search = self.search_ticker(long_ticker.split("-")[0])
+        ticker_search: List[Dict[str, Any]] = self.search_ticker(
+            long_ticker.split("-")[0]
+        )
         for ticker in ticker_search:
             for subtype in ticker["instrument_subtypes"]:
                 for data in subtype["market_data"]:
                     if data.get("long_ticker") == long_ticker:
                         return data["instrument_code"]
-        return None
+        return ""
 
     def _get_price_factor(
         self, instrument_code: str, long_ticker: str, segment: Segment
@@ -1084,7 +1101,9 @@ class Cocos:
         Returns:
             float: The price factor if found, or 1 if not found.
         """
-        instrument_snapshot = self.get_instrument_snapshot(instrument_code, segment)
+        instrument_snapshot: List[Dict[str, Any]] = self.get_instrument_snapshot(
+            instrument_code, segment
+        )
         for instrument in instrument_snapshot:
             if instrument.get("long_ticker") == long_ticker:
                 return instrument["price_factor"]
@@ -1104,29 +1123,12 @@ class Cocos:
         Returns:
             str: The corresponding BYMA settlement code.
         """
-        byma_settlement_map = {
+        byma_settlement_map: dict[Settlement, str] = {
             Settlement.T0: "0001",
             Settlement.T1: "0002",
             Settlement.T2: "0003",
         }
         return byma_settlement_map.get(settlement, "")
-
-    def _get_byma_currency(self, currency: Currency) -> str:
-        """
-        Retrieves the BYMA currency code for the given currency type.
-
-        Args:
-            currency (Currency): The currency type.
-
-        Returns:
-            str: The corresponding BYMA currency code.
-        """
-        byma_currency_map = {
-            Currency.PESOS: "ARS",
-            Currency.DOLAR_MEP: "USD",
-            Currency.DOLAR_CABLE: "",
-        }
-        return byma_currency_map.get(currency, "")
 
     def _get_cocos_settlement(self, settlement: str) -> Optional[Settlement]:
         """
@@ -1138,7 +1140,7 @@ class Cocos:
         Returns:
             Settlement or None: The corresponding Settlement type, or None if not found.
         """
-        cocos_settlement_map = {
+        cocos_settlement_map: dict[str, Settlement] = {
             "0001": Settlement.T0,
             "0002": Settlement.T1,
             "0003": Settlement.T2,
@@ -1146,14 +1148,21 @@ class Cocos:
         return cocos_settlement_map.get(settlement)
 
     def _get_cocos_segment(self, segment: str) -> Segment:
-        cocos_segment_map = {
-            "C": Segment.DEFAULT,
-            "O": Segment.OPTIONS,
-            "U": Segment.REPO,
-        }
-        return cocos_segment_map.get(segment)
+        return self.segments(segment)
 
-    def _get_cocos_currency(self, currency: str) -> Optional[Currency]:
+    def _get_byma_currency(self, currency: Currency) -> str:
+        """
+        Retrieves the BYMA currency code for the given currency type.
+
+        Args:
+            currency (Currency): The currency type.
+
+        Returns:
+            str: The corresponding BYMA currency code.
+        """
+        return currency.value
+
+    def _get_cocos_currency(self, currency: str) -> Currency:
         """
         Retrieves the Currency type for the given BYMA currency code in Cocos.
 
@@ -1163,8 +1172,8 @@ class Cocos:
         Returns:
             Currency or None: The corresponding Currency type, or None if not found.
         """
-        cocos_currency_map = {"ARS": Currency.PESOS, "USD": Currency.DOLAR_MEP}
-        return cocos_currency_map.get(currency)
+
+        return self.currencies(currency)
 
     def _check_cbu_cvu_exists(self, cbu_cvu_to_check: str) -> bool:
         """
@@ -1176,7 +1185,7 @@ class Cocos:
         Returns:
             bool: True if the CBU/CVU exists in the user's bank accounts, False otherwise.
         """
-        accounts_list = self.my_bank_accounts()
+        accounts_list: List[Dict[str, Any]] = self.my_bank_accounts()
         return any(item["cbu_cvu"] == cbu_cvu_to_check for item in accounts_list)
 
     def _add_order(self, order_number: str) -> None:
@@ -1203,7 +1212,7 @@ class Cocos:
         """
         self.account_number = new_account_number
 
-    def _check_fields(self, fields) -> None:
+    def _check_fields(self, fields: List[Tuple[str, Any, Any]]) -> None:
         """
         Private helper function to check the types of fields.
 
@@ -1220,7 +1229,7 @@ class Cocos:
             if not isinstance(field_value, field_type):
                 raise ValueError(f"{field_name} is not of type {field_type.__name__}")
 
-    def _validate_list_parameters(self, type, subtype) -> bool:
+    def _validate_list_parameters(self, type: str, subtype: str) -> bool:
         """
         Private helper function to validate instrument type and subtype combinations.
 

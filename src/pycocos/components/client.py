@@ -32,7 +32,7 @@ class RestClient:
             urls.endpoints["token"], method="post", params=params, data=data
         )
 
-    def logout(self) -> Dict[str, Any]:
+    def logout(self) -> None:
         """Makes a request to the api to logout current session
 
         Returns:
@@ -40,16 +40,16 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["logout"], method="post")
 
-    def get_market_status(self) -> Dict[str, Any]:
+    def get_market_status(self) -> Dict[str, bool]:
         """Makes a request to the api to know if market is open
 
 
         Returns:
-            dict: Market status (0-CI, 1-24hs, 2-48hs, 3-DolarMEP Bot) as boolean
+            dict: Market status (0-CI, 1-24hs, 2-48hs, 3-DolarMEP Bot, 4-??, 5-??) as boolean
         """
         return self.api_request(urls.endpoints["open_market"])
 
-    def get_university(self) -> Dict[str, Any]:
+    def get_university(self) -> List[Dict[str, str]]:
         """Makes a request to the api to get Cocos University articles
 
         Returns:
@@ -57,7 +57,7 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["university"])
 
-    def get_carrousel(self) -> Dict[str, Any]:
+    def get_carrousel(self) -> List[Dict[str, str]]:
         """Makes a request to the api to get home page's promoted instruments
 
         Returns:
@@ -65,7 +65,7 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["carrousel"])
 
-    def get_news(self) -> Dict[str, Any]:
+    def get_news(self) -> List[Dict[str, Any]]:
         """Makes a request to the api to get home page's news
 
         Returns:
@@ -81,7 +81,7 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["my_data"])
 
-    def get_investor_test(self) -> Dict[str, Any]:
+    def get_investor_test(self) -> List[Dict[str, Any]]:
         """Makes a request to get the investor test questions
 
         Returns:
@@ -110,7 +110,7 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["daily_performance"])
 
-    def get_historic_performance(self) -> Dict[str, Any]:
+    def get_historic_performance(self) -> List[Dict[str, Any]]:
         """Makes a request to get historic performance of our account
 
         Returns:
@@ -194,7 +194,7 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["withdraw"], method="post", data=data)
 
-    def get_orders(self) -> Dict[str, Any]:
+    def get_orders(self) -> List[Dict[str, Any]]:
         """Makes a request to get the status of all orders
 
         Returns:
@@ -285,7 +285,7 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["open_dolar_mep"])
 
-    def get_home_list(self) -> List[Dict[str, Any]]:
+    def get_home_list(self) -> Dict[str, Any]:
         """Makes a request to get Home page quote list
 
         Returns:
@@ -293,7 +293,7 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["home_list"])
 
-    def get_my_list(self) -> List[Dict[str, Any]]:
+    def get_my_list(self) -> Dict[str, Any]:
         """Makes a request to get favorite quote list
 
         Returns:
@@ -393,7 +393,7 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["tickers"].format(ticker, segment))
 
-    def search_tickers(self, ticker: str) -> Dict[str, Any]:
+    def search_tickers(self, ticker: str) -> List[Dict[str, Any]]:
         """Makes a request to search tickers
 
         Args:
@@ -412,7 +412,7 @@ class RestClient:
         """
         return self.api_request(urls.endpoints["rules"])
 
-    def get_instrument_types(self) -> Dict[str, Any]:
+    def get_instrument_types(self) -> List[Dict[str, Any]]:
         """Makes a request to get types of instruments lists
 
         Returns:
@@ -433,6 +433,10 @@ class RestClient:
         json_data: Dict[str, Any] = {},
         data: str = "",
     ):
+        response = None
+
+        if method not in ["get", "post", "delete"]:
+            raise ApiException(f"Method {method} not suported")
         if method == "get":
             response = self.session.get(self._api_url(path))
 
@@ -445,7 +449,12 @@ class RestClient:
             )
 
         if method == "delete":
-            response = self.session.delete(self._api_url(path), json=json_data)
+            response = self.session.delete(
+                self._api_url(path), json=json_data
+            )
+
+        if not response:
+            raise ApiException("Bad HTTP API Response")
 
         json_response = simplejson.loads(response.text)
 
@@ -459,7 +468,7 @@ class RestClient:
             raise ApiException(f"Error 500 {json_response}")
 
         if response.status_code == 200:
-            self._log_message(path, json_response)
+            self._log_message(path, str(json_response))
         return json_response
 
     def update_session_headers(self, header_update: Dict[str, Any]) -> None:

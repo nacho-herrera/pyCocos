@@ -10,10 +10,11 @@ from enum import Enum
 class Currency(Enum):
     """Enumerates the supported currencies in the application."""
 
-    DOLAR_CABLE = "CABLE"
-    DOLAR_MEP = "MEP"
+    ALL = "INDISTINTO"
+    CABLE = "EXT"
+    NONE = ""
     PESOS = "ARS"
-
+    USD = "USD"
 
 class OrderType(Enum):
     """Enumerates the types of orders supported in the application."""
@@ -31,11 +32,11 @@ class OrderSide(Enum):
 
 class Segment(Enum):
     """Enumerates the market segments in the application.
-    
-    For FCI instruments use Segments.FCI; 
-    for stock options use Segments.OPTIONS; 
-    for Repo instruments use Segments.REPO. 
-    Otherwise use Segments.DEFAULT for everything else
+
+    For FCI instruments use Segment.FCI;
+    for stock options use Segment.OPTIONS;
+    for Repo instruments use Segment.REPO.
+    Otherwise use Segment.DEFAULT for everything else
     """
 
     DEFAULT = "C"
@@ -61,15 +62,19 @@ class InstrumentSubType(Enum):
 
     ARS = "NACIONALES_ARS"
     CER = "CER"
+    CRYPTO = "CRYPTO"
     ETF = "ETF"
     FIXED = "TASA_FIJA"
     GENERAL = "GENERAL"
     LIDERES = "LIDERES"
     NEW = "NUEVOS"
+    NONE = ""
+    OTROS = "OTROS"
+    PF = "PF"
     PROV = "PROVINCIALES"
     TOP = "TOP"
     USD = "NACIONALES_USD"
-    NONE = None
+
 
 class Settlement(Enum):
     """Enumerates the settlement options for trades in the application."""
@@ -77,7 +82,7 @@ class Settlement(Enum):
     T0 = "CI"
     T1 = "24hs"
     T2 = "48hs"
-
+    NONE = ""
 
 class PerformanceTimeframe(Enum):
     """Enumerates the different types of performance reports available in the application."""
