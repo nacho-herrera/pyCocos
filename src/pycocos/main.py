@@ -28,7 +28,7 @@ class Cocos:
         "Content-Type": "application/json",
     }
 
-    def __init__(self, email: str, password: str, recaptcha_token: str) -> None:
+    def __init__(self, email: str, password: str, recaptcha_token: str = "undefined") -> None:
         ## Parameters validation
         required_fields = [
             ("email", email, str),
