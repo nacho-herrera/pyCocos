@@ -18,7 +18,7 @@ pip install pycocos
 
 ## API Credentials
 
-To use this library, you need to have the correct authentication credentials and a valid reCAPTCHA token.
+To use this library, you need to have the correct authentication credentials.
 
 ## Dependencies
 
@@ -36,7 +36,7 @@ This section describes the functionality and components of the library.
 
 #### Initialization
 
-Before using the library, you need to initialize it with a valid email, password, and reCAPTCHA token. You can find the token using the browser dev-yTools.
+Before using the library, you need to initialize it with a valid email and password. You can find the token using the browser dev-yTools.
 
 #### REST
 
@@ -101,7 +101,7 @@ Once the library has been installed, you can import and initialize it. The initi
 ```python
 from pycocos import Cocos
 
-app = Cocos(email="sample@email.com", password="S4mp13.p4ssW0rd", recaptcha_token="AsDfrEcAPtcHA-ToKeNaSDf")
+app = Cocos(email="sample@email.com", password="S4mp13.p4ssW0rd")
 ```
 
 #### REST
