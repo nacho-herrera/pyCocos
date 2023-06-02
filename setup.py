@@ -15,7 +15,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where='src'),
     package_dir={'': 'src'},
     install_requires=[
-        'requests>=2.28.2',
+        'requests>=2.31.0',
         'simplejson>=3.19.1',
     ],
     classifiers=[
