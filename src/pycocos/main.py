@@ -3,9 +3,8 @@
     pyCocos.main
     Main client.
 """
-
+from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple
-
 import json
 
 from .components import (
@@ -990,18 +989,18 @@ class Cocos:
         Notes:
             - The `segment` argument is not validated against valid ticker and segment combinations.
             It's important to ensure the appropriate segment is provided.
-            - The long ticker format follows the pattern: "<TICKER>-<SETTLEMENT>-<SEGMENT>-CT-<CURRENCY>",
+            - The long ticker format follows the pattern: "<TICKER>-<SETTLEMENT>-<SEGMENT>-<VENUE>-<CURRENCY>",
             where:
                 - <TICKER> represents the ticker symbol in uppercase.
                 - <SETTLEMENT> is a code representing the settlement date (e.g., "0001" for T0).
                 - <SEGMENT> is the segment of the instrument.
-                - CT indicates the BYMA market venue.
+                - <VENUE> indicates the BYMA market venue (e.g., "CT" for Price/Time Priority).
                 - <CURRENCY> represents the currency code.
 
         Examples:
-            long_ticker("AAPL", Settlements.T1, Currency.PESOS) returns "AAPL-0002-C-CT-ARS"
-            long_ticker("GOOGD", Settlements.T0, Currency.DOLAR_MEP) returns "GOOGD-0001-C-CT-USD"
-            long_ticker("GFGC500.JU", Settlements.T2, Currency.PESOS, Segment.OPTIONS) returns "GFGC500.JU-0001-O-CT-ARS"
+            long_ticker("AAPL", Settlements.T2, Currency.PESOS) returns "AAPL-0003-C-CT-ARS"
+            long_ticker("GOOGD", Settlements.T0, Currency.USD) returns "GOOGD-0001-C-CT-USD"
+            long_ticker("GFGC500.JU", Settlements.T1, Currency.PESOS, Segment.OPTIONS) returns "GFGC500.JU-0002-O-CT-ARS"
 
         """
 

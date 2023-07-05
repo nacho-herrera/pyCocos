@@ -2,5 +2,5 @@ __pycache__/
 .venv/
 .tests/
 .vscode/
-tests.ipynb
+*.ipynb
 *.bak
