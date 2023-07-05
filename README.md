@@ -138,6 +138,7 @@ app.instrument_list_snapshot(instrument_type=app.instrument_types.ACCIONES,
                              currency=app.currencies.PESOS, 
                              segment=app.segments.DEFAULT)
 ```
+For more information you can check this [article.](https://medium.com/@nachoherrera/biblioteca-pycocos-a3579721c79e)
 
 ## Official API Documentation
 
@@ -145,4 +146,4 @@ There is no official API documentation for this library. The library was created
 
 ## Acknowledgements
 
-This library was created with the support of the Scrappers Argentinos Telegram Group.
+This library was created with the support of the Scrappers Argentinos and Inversiones y Algoritmos Telegram Groups.
