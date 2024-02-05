@@ -62,17 +62,10 @@ The library provides functions to make requests to the REST API and retrieve the
 - **get_daily_history**: Retrieves the closing price history for a given instrument and period.
 - **get_instrument_snapshot**: Retrieves the market price information for a given instrument.
 - **get_instrument_list_snapshot**: Retrieves the market price information for predefined instrument types.
-- **get_instrument_list_snapshot_paginated**: Retrieves the market price information for predefined instruments, paginated.
-- **get_recommended_tickers**: Retrieves the Cocos Capital recommendations list.
-- **get_favorites_tickers**: Retrieves the user's favorites list.
 - **search_ticker**: Queries the API to search for a particular instrument based on the name.
 - **market_status**: Retrieves the status of the market session.
 - **instruments_rules**: Retrieves the price rules for every type of instrument.
-- **instrument_types_and_subtypes**: Retrieves a list of possible combinations of instrument types and subtypes.
 - **get_dolar_mep_info**: Retrieves the Cocos Capital "closed" Dolar MEP quote.
-- **get_open_dolar_mep_info**: Retrieves the bonds (AL30) Dolar MEP quote.
-- **get_ads_carrousel**: Retrieves the ads carousel from the Cocos Capital app's homepage.
-- **get_news**: Retrieves the news from the Cocos Capital app's homepage.
 - **get_cocos_university_articles**: Retrieves the University articles from the Cocos Capital app's homepage.
 
 > All functions return a dictionary representing the JSON response.

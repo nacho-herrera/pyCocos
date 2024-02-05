@@ -27,12 +27,12 @@ class Cocos:
         "Content-Type": "application/json",
     }
 
-    def __init__(self, email: str, password: str, recaptcha_token: str = "undefined") -> None:
+    def __init__(self, email: str, password: str, gotrue_meta_security: Optional[Dict[str, Any]] = {}, api_key: Optional[str] = None) -> None:
         ## Parameters validation
-        required_fields = [
+        required_fields: list[tuple[str, Any, Any]]  = [
             ("email", email, str),
             ("password", password, str),
-            ("recaptcha_token", recaptcha_token, str),
+            ("gotrue_meta_security", gotrue_meta_security, dict),
         ]
         self._check_fields(required_fields)
 
@@ -52,12 +52,22 @@ class Cocos:
         ## Login Information
         self.email: str = email
         self.password: str = password
-        self.recaptcha_token: str = recaptcha_token
+        self.gotrue_meta_security: Dict[str, Any] = gotrue_meta_security
+        #self.recaptcha_token: str = recaptcha_token
         self.account_number: str = ""
-
+        if not api_key: 
+            self.api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzA0NjgyODAwLAogICJleHAiOiAxODYyNTM1NjAwCn0.f0w62k0q0eyyGBDkAP7vUUEg_Ingb9YbOlhsGCC4R3c"  # Working apikey from main JS File - 2024-02-05.
+        else:
+            self.api_key = api_key
+                
         ## Current session variables # ! NEEDS TO BE DEVELOPED
         self.orders: List[str] = []
         self.connected: bool = False
+        
+        self.headers = {
+            "Apikey": self.api_key,
+            "Authorization": f"Bearer {self.api_key}"
+        }
 
         ## Finally, tries to authenticate
         self._auth()
@@ -73,14 +83,13 @@ class Cocos:
             Exception: If the access token is not found in the API response.
         """
         params = "grant_type=password"
-        payload: str = json.dumps({"email": self.email, "password": self.password})
-
+        payload: str = json.dumps({"email": self.email, "password": self.password, "gotrue_meta_security": self.gotrue_meta_security})
         self.client.update_session_headers(self.headers)
 
         response: Dict[str, Any] = self.client.get_token(params=params, data=payload)
 
-        if "error" in response.keys():
-            raise Exception(f'Error: {response["error_description"]}')
+        if "success" in response.keys() and response["success"] == False:
+            raise Exception(f'Error: {response["message"]}')
 
         if "access_token" not in response.keys():
             raise Exception("Error: Access token not found in the API response")
@@ -97,11 +106,12 @@ class Cocos:
         """
 
         headers_update: dict[str, str] = {
+            "apikey": "",
             "authorization": f"Bearer {self.access_token}",
-            "recaptcha-token": self.recaptcha_token,
+            #"recaptcha-token": self.recaptcha_token,
             "x-account-id": self.account_number,
         }
-
+        
         self.client.update_session_headers(headers_update)
 
         self.my_account_info: Dict[str, Any] = self.my_data()
@@ -212,7 +222,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [("long_ticker", long_ticker, str)]
+        required_fields: list[tuple[str, Any, Any]]  = [("long_ticker", long_ticker, str)]
         self._check_fields(required_fields)
 
         return self.client.get_selling_power(long_ticker)
@@ -238,7 +248,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [("date_from", date_from, str), ("date_to", date_to, str)]
+        required_fields: list[tuple[str, Any, Any]]  = [("date_from", date_from, str), ("date_to", date_to, str)]
 
         self._check_fields(required_fields)
 
@@ -276,7 +286,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [("timeframe", timeframe, PerformanceTimeframe)]
+        required_fields: list[tuple[str, Any, Any]]  = [("timeframe", timeframe, PerformanceTimeframe)]
         self._check_fields(required_fields)
 
         if timeframe != self.performance_timeframes.RANGE:
@@ -306,7 +316,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [
+        required_fields: list[tuple[str, Any, Any]]  = [
             ("cbu_cvu", cbu, str),
             ("cuit", cuit, str),
             ("currency", currency, Currency),
@@ -342,7 +352,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [
+        required_fields: list[tuple[str, Any, Any]]  = [
             ("currency", currency, Currency),
             ("amount", amount, str),
             ("cbu_cvu", cbu_cvu, str),
@@ -375,9 +385,8 @@ class Cocos:
     def submit_buy_order(
         self,
         long_ticker: str,
-        quantity: str,
-        price: str,
         order_type: OrderType = OrderType.LIMIT,
+        **kwargs: Dict[str, str]
     ) -> Dict[str, Any]:
         """Submits a buy order through the API.
 
@@ -386,35 +395,39 @@ class Cocos:
 
         Args:
             long_ticker (str): The long ticker of the instrument to buy.
+            order_type (OrderTypes, optional): The type of order (limit or market). Defaults to OrderTypes.LIMIT.
             quantity (str): The quantity of the buy order.
             price (str): The price of the buy order.
-            order_type (OrderTypes, optional): The type of order (limit or market). Defaults to OrderTypes.LIMIT.
+            amount (float): The amount to pay for the buy order
 
         Returns:
             Dict[str, Any]: A dictionary containing the response from the API, including the new order ID.
         """
 
-        # Parameters validation
-        required_fields = [
+        # Create basic payload object
+        payload: Dict[str, str] = {
+            "long_ticker": long_ticker,
+            "side": self.order_sides.BUY.value,
+            "type": order_type.value
+        }
+        
+        # create basic parameters validation list
+        required_fields: list[tuple[str, Any, Any]] = [
             ("long_ticker", long_ticker, str),
-            ("quantity", quantity, str),
-            ("price", price, str),
             ("order_type", order_type, OrderType),
         ]
+
+        # Add order parameters to payload object and validation list
+        for k, v in kwargs.items():
+            payload[k] = v
+            required_fields.append((k, v ,str))                       
+
+        # Validate all parameters
         self._check_fields(required_fields)
 
         # Check if account has enough money to purchase
-        if not self._validate_buy_power(long_ticker, quantity, price):
+        if not self._validate_buy_order(payload):
             raise ApiException(f"Not enough money to purchase")
-
-        # Create payload object
-        payload: Dict[str, str] = {
-            "type": order_type.value,
-            "side": self.order_sides.BUY.value,
-            "quantity": quantity,
-            "long_ticker": long_ticker,
-            "price": price,
-        }
 
         response: Dict[str, Any] = self.client.submit_order(json=payload)
         if "success" in response.keys():
@@ -443,7 +456,7 @@ class Cocos:
             Dict[str, Any]: A dictionary containing the response from the API, including the new order ID.
         """
         ## Parameters validation
-        required_fields = [
+        required_fields: list[tuple[str, Any, Any]]  = [
             ("long_ticker", long_ticker, str),
             ("quantity", quantity, str),
             ("price", price, str),
@@ -488,7 +501,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [
+        required_fields: list[tuple[str, Any, Any]]  = [
             ("currency", currency, Currency),
             ("amount", amount, float),
             ("term", term, int),
@@ -524,7 +537,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [("order_number", order_number, str)]
+        required_fields: list[tuple[str, Any, Any]]  = [("order_number", order_number, str)]
         self._check_fields(required_fields)
 
         # Retrieve order information
@@ -556,7 +569,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [("order_number", order_number, str)]
+        required_fields: list[tuple[str, Any, Any]]  = [("order_number", order_number, str)]
         self._check_fields(required_fields)
 
         if order_number:
@@ -583,7 +596,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [
+        required_fields: list[tuple[str, Any, Any]]  = [
             ("long_ticker", long_ticker, str),
             ("date_from", date_from, str),
         ]
@@ -608,7 +621,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [
+        required_fields: list[tuple[str, Any, Any]]  = [
             ("ticker", ticker, str),
             ("segment", segment, Segment),
         ]
@@ -645,7 +658,7 @@ class Cocos:
         """
 
         # Parameters validation
-        required_fields = [
+        required_fields: list[tuple[str, Any, Any]]  = [
             ("instrument_type", instrument_type, InstrumentType),
             ("instrument_subtype", instrument_subtype, InstrumentSubType),
             ("settlement", settlement, Settlement),
@@ -700,35 +713,35 @@ class Cocos:
             ValueError: If the combination of instrument type and subtype is invalid. Refer to the instrument_types_and_subtypes method.
 
         """
-
-        # Parameters validation
-        required_fields = [
-            ("instrument_type", instrument_type, InstrumentType),
-            ("instrument_subtype", instrument_subtype, InstrumentSubType),
-            ("settlement", settlement, Settlement),
-            ("currency", currency, Currency),
-            ("segment", segment, Segment),
-            ("page", page, int),
-            ("size", size, int),
-        ]
-        self._check_fields(required_fields)
-
-        if not self._validate_list_parameters(
-            instrument_type.value, instrument_subtype.value
-        ):
-            raise ValueError(
-                "Invalid combination for instrument type and subtype. Check instrument_types_and_subtypes method."
-            )
-
-        return self.client.get_tickers_pagination(
-            instrument_type.value,
-            instrument_subtype.value,
-            settlement.value,
-            currency.value,
-            segment.value,
-            page,
-            size,
-        )
+        raise ApiException("Disabled endpoint.")
+        ## Parameters validation
+        #required_fields: list[tuple[str, Any, Any]]  = [
+        #    ("instrument_type", instrument_type, InstrumentType),
+        #    ("instrument_subtype", instrument_subtype, InstrumentSubType),
+        #    ("settlement", settlement, Settlement),
+        #    ("currency", currency, Currency),
+        #    ("segment", segment, Segment),
+        #    ("page", page, int),
+        #    ("size", size, int),
+        #]
+        #self._check_fields(required_fields)
+        #
+        #if not self._validate_list_parameters(
+        #    instrument_type.value, instrument_subtype.value
+        #):
+        #    raise ValueError(
+        #        "Invalid combination for instrument type and subtype. Check instrument_types_and_subtypes method."
+        #    )
+        #
+        #return self.client.get_tickers_pagination(
+        #    instrument_type.value,
+        #    instrument_subtype.value,
+        #    settlement.value,
+        #    currency.value,
+        #    segment.value,
+        #    page,
+        #    size,
+        #)
 
     def get_recommended_tickers(self) -> Dict[str, Any]:
         """Calls the API to retrieve the list of recommended tickers from the home page.
@@ -743,8 +756,8 @@ class Cocos:
             represents a recommended ticker and may contain different fields such as ticker symbol, company name, price, etc.
 
         """
-
-        return self.client.get_home_list()
+        raise ApiException("Disabled endpoint.")
+        #return self.client.get_home_list()
 
     def get_favorites_tickers(self) -> Dict[str, Any]:
         """Calls the API to retrieve the list of favorite instruments from the home page.
@@ -759,8 +772,8 @@ class Cocos:
             represents a favorite instrument and may contain different fields such as ticker symbol, company name, price, etc.
 
         """
-
-        return self.client.get_my_list()
+        raise ApiException("Disabled endpoint.")
+        #return self.client.get_my_list()
 
     def search_ticker(self, query: str) -> List[Dict[str, Any]]:
         """Calls the API to search for a ticker by name.
@@ -783,7 +796,7 @@ class Cocos:
         """
 
         ## Parameters validation
-        required_fields = [("query", query, str)]
+        required_fields: list[tuple[str, Any, Any]]  = [("query", query, str)]
         self._check_fields(required_fields)
 
         if len(query) < 2:
@@ -839,8 +852,8 @@ class Cocos:
             The structure and content of the returned dictionary may vary depending on the API response.
 
         """
-
-        return self.client.get_instrument_types()
+        raise ApiException("Disabled endpoint.")
+        #return self.client.get_instrument_types()
 
     @property
     def allowed_combinations(self) -> List[Tuple[str, str]]:
@@ -862,10 +875,26 @@ class Cocos:
 
         """
 
-        return [
-            (_["instrument_type"], _["instrument_subtype"])
-            for _ in self.instrument_types_and_subtypes()
-        ]
+        #return [
+        #    (_["instrument_type"], _["instrument_subtype"])
+        #    for _ in self.instrument_types_and_subtypes()
+        #]
+        combinations = [
+            ("ACCIONES", "LIDERES"),
+            ("ACCIONES", "GENERAL"), 
+            ("CEDEARS", "TOP"),
+            ("CEDEARS", "ETF"),
+            ("CEDEARS", "NUEVOS"),
+            ("CEDEARS", "OTROS"),
+            ("BONOS_PUBLICOS", "NACIONALES_USD"),
+            ("BONOS_PUBLICOS", "NACIONALES_ARS"),
+            ("BONOS_PUBLICOS", "PROVINCIALES"),
+            ("BONOS_CORP", "TOP"),
+            ("LETRAS", "TASA_FIJA"),
+            ("LETRAS", "CER"),
+            ("FCI", "PF")
+            ]
+        return combinations
 
     ###############
     ## DOLAR MEP ##
@@ -905,8 +934,8 @@ class Cocos:
             The structure and content of the returned dictionary may vary depending on the API response.
 
         """
-
-        return self.client.get_open_dolar_mep()
+        raise ApiException("Disabled endpoint.")
+        #return self.client.get_open_dolar_mep()
 
     ##########
     ## MISC ##
@@ -925,8 +954,8 @@ class Cocos:
             The structure and content of the returned dictionary may vary depending on the API response.
 
         """
-
-        return self.client.get_carrousel()
+        raise ApiException("Disabled endpoint.")
+        #return self.client.get_carrousel()
 
     def get_news(self) -> List[Dict[str, Any]]:
         """Calls API to retrieve news articles.
@@ -941,8 +970,8 @@ class Cocos:
             The structure and content of the returned dictionary may vary depending on the API response.
 
         """
-
-        return self.client.get_news()
+        raise ApiException("Disabled endpoint.")
+        #return self.client.get_news()
 
     def get_cocos_university_articles(self) -> List[Dict[str, Any]]:
         """Calls API to retrieve articles from Cocos University.
@@ -1012,37 +1041,54 @@ class Cocos:
 
         return f"{ticker.upper()}-{_settlement}-{segment.value}-CT-{_currency}"
 
-    def _validate_buy_power(self, long_ticker: str, quantity: str, price: str) -> bool:
+    def _validate_buy_order(self, payload: Dict[str, str]) -> bool:
         """
         Validates if there are sufficient funds available to place a buy order.
 
         Args:
-            long_ticker (str): The long ticker of the instrument.
-            quantity (str): The quantity of instruments to buy.
-            price (str): The price per instrument.
+            payload (Dict[str, str]): The payload to validate.
 
         Returns:
             bool: True if there are sufficient funds, False otherwise.
         """
-        _, settlement, segment, _, currency = long_ticker.split("-")
-
+        long_ticker: str = payload['long_ticker']
+        instrument_code, settlement, segment, _, currency = long_ticker.split("-")
+        
+        #instrument_code = self._find_instrument_code(long_ticker)
         settlement = self._get_cocos_settlement(settlement)
         segment = self._get_cocos_segment(segment)
-        if not settlement:
-            return False
-        if not segment:
+        
+        if not settlement or not segment:
             return False
 
-        instrument_code = self._find_instrument_code(long_ticker)
-        price_factor = self._get_price_factor(instrument_code, long_ticker, segment)
-
+        # validate the possible combinations of order parameters
+        if payload["type"] == OrderType.LIMIT:
+            if not "price" in payload:
+                raise ApiException("The parameter 'price' must be present in LIMIT order")
+            if not "quantity" in payload or not "amount" in payload:
+                raise ApiException("The parameter 'quantity' or 'amount' must be present in LIMIT order")
+        if payload["type"] == OrderType.MARKET:
+            if "price" in payload:
+                raise ApiException("The paramenter 'price' can't be present in MARKET order")
+            if "amount" in payload and "quantity" in payload:
+                raise ApiException("The parameters 'amount' and 'quantity' can't be present simultaneously in MARKET order")
+        
+        # check order total
+        if "price" not in payload:
+            price = self._get_instrument_snapshot_value_by_key(instrument_code, long_ticker, segment, "ask")
+        else:
+            price = payload["price"]
+        
+        if 'amount' not in payload.items():
+            price_factor = self._get_price_factor(instrument_code, long_ticker, segment)
+            order_total = float(payload["quantity"]) * float(payload["price"]) / price_factor
+        else:
+            order_total = float(payload["amount"])
+        
         available_funds = self.funds_available()
         available_at_settlement_currency: float = available_funds[settlement.value][
             currency.lower()
         ]
-        order_total = float(quantity) * float(price) / price_factor
-
-        print(f"{order_total}, {available_at_settlement_currency}")
 
         return available_at_settlement_currency >= order_total
 
@@ -1086,6 +1132,27 @@ class Cocos:
                         return data["instrument_code"]
         return ""
 
+    def _get_instrument_snapshot_value_by_key(self, instrument_code: str, long_ticker:str, segment: Segment, key: str) -> Any:
+        """Retrieves the value of a specified key in the instrument snapshot list
+
+        Args:
+            instrument_code (str): The instrument code.
+            long_ticker (str): The long ticker of the instrument.
+            segment (Segment): The segment of the instrument.
+            key (str): The key to search
+
+        Returns:
+            _type_: _description_
+        """
+        instrument_snapshot: List[Dict[str, Any]] = self.get_instrument_snapshot(
+            instrument_code, segment
+        )
+        for instrument in instrument_snapshot:
+            if instrument.get("long_ticker") == long_ticker:
+                return instrument.get(key)
+        return ""
+        
+
     def _get_price_factor(
         self, instrument_code: str, long_ticker: str, segment: Segment
     ) -> float:
@@ -1100,13 +1167,8 @@ class Cocos:
         Returns:
             float: The price factor if found, or 1 if not found.
         """
-        instrument_snapshot: List[Dict[str, Any]] = self.get_instrument_snapshot(
-            instrument_code, segment
-        )
-        for instrument in instrument_snapshot:
-            if instrument.get("long_ticker") == long_ticker:
-                return instrument["price_factor"]
-        return 1
+        return self._get_instrument_snapshot_value_by_key(instrument_code, long_ticker, segment, "price_factor")
+        
 
     ##############
     ## INTERNAL ##

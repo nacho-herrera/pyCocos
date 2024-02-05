@@ -452,12 +452,11 @@ class RestClient:
             response = self.session.delete(
                 self._api_url(path), json=json_data
             )
-
         if not response:
             raise ApiException("Bad HTTP API Response")
 
         json_response = simplejson.loads(response.text)
-
+        
         if response.status_code == 401:
             if retry:
                 self.api_request(path, retry=False)
