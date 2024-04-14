@@ -27,6 +27,7 @@ The library has the following dependency:
 ```
 requests>=2.31.0
 simplejson>=3.19.1
+pyotp>=2.9.0
 ```
 ## Features
 
@@ -36,7 +37,12 @@ This section describes the functionality and components of the library.
 
 #### Initialization
 
-Before using the library, you need to initialize it with a valid email and password. You can find the token using the browser dev-yTools.
+Before using the library, you need to initialize it with a valid email and password. The library includes the working webpage api_key token, but if that token is updated, you can find it using the browser dev-tools and pass it on initialization with the *api_key* parameter.
+
+#### 2nd Factor Authentication
+
+On 4/13/2024 Cocos Capital implemented a 2nd factor authentication for all users. Different users may have SMS, Mail or TOTP app authentication. The library implements pyotp library for automatic code generation. To use that feature, topt secret key must be passed as parameters *topt_secret_key* parameter on initialization. If parameter is not passed, library will request code interactively. 
+If you have TOTP app activated, you can get your secret key using this [method](https://shieldplanet.com/extract-secret-keys-from-google-authenticator-qr-code/). Pyotp implementation was kindly developed by @El_Raulo on Telegram. 
 
 #### REST
 
@@ -94,8 +100,11 @@ Once the library has been installed, you can import and initialize it. The initi
 ```python
 from pycocos import Cocos
 
-app = Cocos(email="sample@email.com", password="S4mp13.p4ssW0rd")
+app = Cocos(email="sample@email.com", password="S4mp13.p4ssW0rd", api_key="OPTIONAL", topt_secret_key="OPTIONAL")
+
 ```
+
+*api_key* and *topt_secret_key* are optional parameters, default values are None.
 
 #### REST
 
@@ -139,4 +148,5 @@ There is no official API documentation for this library. The library was created
 
 ## Acknowledgements
 
-This library was created with the support of the Scrappers Argentinos and Inversiones y Algoritmos Telegram Groups.
+This library was created with the support of the Scrappers Argentinos and Inversiones y Algoritmos Telegram Groups. 
+Updated version that includes OTP validation is based on the development and testing of @El_Raulo, @mjcolom and @sebivaq. Special thanks to them. 

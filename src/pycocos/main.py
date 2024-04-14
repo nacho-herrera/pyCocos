@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple
+import pyotp
 import json
 
 from .components import (
@@ -27,7 +28,7 @@ class Cocos:
         "Content-Type": "application/json",
     }
 
-    def __init__(self, email: str, password: str, gotrue_meta_security: Optional[Dict[str, Any]] = {}, api_key: Optional[str] = None) -> None:
+    def __init__(self, email: str, password: str, gotrue_meta_security: Optional[Dict[str, Any]] = {}, api_key: Optional[str] = None, topt_secret_key: Optional[str] = None) -> None:
         ## Parameters validation
         required_fields: list[tuple[str, Any, Any]]  = [
             ("email", email, str),
@@ -55,6 +56,12 @@ class Cocos:
         self.gotrue_meta_security: Dict[str, Any] = gotrue_meta_security
         #self.recaptcha_token: str = recaptcha_token
         self.account_number: str = ""
+
+        if topt_secret_key:
+            self.topt = pyotp.TOTP(topt_secret_key)
+        else:
+            self.topt = None
+
         if not api_key: 
             self.api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzA0NjgyODAwLAogICJleHAiOiAxODYyNTM1NjAwCn0.f0w62k0q0eyyGBDkAP7vUUEg_Ingb9YbOlhsGCC4R3c"  # Working apikey from main JS File - 2024-02-05.
         else:
@@ -95,7 +102,43 @@ class Cocos:
             raise Exception("Error: Access token not found in the API response")
 
         self.access_token = response["access_token"]
-        self._auth_phase_2()
+        self._2fa_challenge()
+
+    def _2fa_challenge(self) -> None:
+        headers_update: dict[str, str] = {
+            "apikey": self.api_key,
+            "authorization": f"Bearer {self.access_token}",
+        }
+        
+        self.client.update_session_headers(headers_update)
+        second_factor_response = self.client.get_2factors()
+        if "requireChallenge" in second_factor_response.keys() and second_factor_response["requireChallenge"]:
+            challenge_id = second_factor_response["id"]
+        
+        payload = json.dumps({
+            "expires_at": 123, 
+            "id": challenge_id,
+        })
+
+        challenge = self.client.submit_challenge_request(challenge_id=challenge_id)
+        
+        if challenge_id not in ["mail", "sms"] and self.topt is not None:
+            code = self.topt.now()
+        else:
+            code = input("Insert 2FA Code: ")
+        payload = {
+            "challenge_id": "_",
+            "code": code,
+        }
+        
+        #self.client.update_session_headers(headers_update)        
+        response = self.client.submit_challenge_verification(challenge_id=challenge_id, json=payload)
+
+        if "access_token" not in response.keys():
+            raise Exception("Error: Access token not found in the API response")
+        else:
+            self.access_token = response["access_token"]
+            self._auth_phase_2()
 
     def _auth_phase_2(self) -> None:
         """Updates the session headers and performs additional steps after login.

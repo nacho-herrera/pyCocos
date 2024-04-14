@@ -9,6 +9,9 @@ api_url = "https://api.cocos.capital/"
 endpoints = {
     "token": "auth/v1/token",
     "logout": "auth/v1/logout",
+    "2factors": "auth/v1/factors/default",
+    "challenge": "auth/v1/factors/{}/challenge",
+    "verify": "auth/v1/factors/{}/verify",
     "open_market": "api/v1/calendar/open-market",
     "carrousel": "api/v1/home/carrousel",
     "news": "api/v1/home/news",

@@ -32,6 +32,19 @@ class RestClient:
             urls.endpoints["token"], method="post", params=params, data=data
         )
 
+    def get_2factors(self):
+        return self.api_request(urls.endpoints["2factors"])
+
+    def submit_challenge_request(self, challenge_id: str):
+        return self.api_request(
+            urls.endpoints["challenge"].format(challenge_id), method="post"
+        )
+
+    def submit_challenge_verification(self, challenge_id: str, json: str):
+        return self.api_request(
+            urls.endpoints["verify"].format(challenge_id), method="post", json_data=json
+        )
+
     def logout(self) -> None:
         """Makes a request to the api to logout current session
 
@@ -449,14 +462,13 @@ class RestClient:
             )
 
         if method == "delete":
-            response = self.session.delete(
-                self._api_url(path), json=json_data
-            )
+            response = self.session.delete(self._api_url(path), json=json_data)
+
         if not response:
             raise ApiException("Bad HTTP API Response")
 
         json_response = simplejson.loads(response.text)
-        
+
         if response.status_code == 401:
             if retry:
                 self.api_request(path, retry=False)
