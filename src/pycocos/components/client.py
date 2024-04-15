@@ -336,11 +336,11 @@ class RestClient:
         """
         return self.api_request(
             urls.endpoints["tickers_list"].format(
-                instrument_type,
-                instrumet_subtype,
-                settlement,
-                currency,
-                segment,
+                instrument_type.value,
+                instrumet_subtype.value,
+                settlement.value,
+                currency.value,
+                segment.value,
             )
         )
 
