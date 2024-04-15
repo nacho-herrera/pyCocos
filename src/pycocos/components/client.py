@@ -288,7 +288,7 @@ class RestClient:
         Returns:
             dict: Dictionary with quotes and additional info
         """
-        return self.api_request(urls.endpoints["dolar_mep"])
+        return self.api_request(urls.endpoints["new_dolar_mep"])
 
     def get_open_dolar_mep(self) -> Dict[str, Any]:
         """Makes a request to get bot's dolar mep quotes

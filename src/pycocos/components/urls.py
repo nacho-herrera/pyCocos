@@ -17,6 +17,7 @@ endpoints = {
     "news": "api/v1/home/news",
     "university": "api/v1/home/university",
     "dolar_mep": "api/v1/markets/dolar-mep",
+    "new_dolar_mep": "api/v1/public/mep-prices",
     "home_list": "api/v1/markets/lists/home",
     "my_list": "api/v1/markets/lists/me",
     "tickers_list": "api/v1/markets/lists/tickers/?instrument_type={}&instrument_subtype={}&settlement_days={}&currency={}&segment={}",

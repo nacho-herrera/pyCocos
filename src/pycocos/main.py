@@ -954,7 +954,7 @@ class Cocos:
     ###############
 
     def get_dolar_mep_info(self) -> Dict[str, Any]:
-        """Calls API to retrieve the current value of the Closed "Dólar MEP" exchange rate.
+        """Calls API to retrieve the current value of the "Dólar MEP" exchange rate.
 
         The "Dólar MEP" is an exchange rate used in Argentina for the conversion of local currency
         to US dollars through electronic payment systems. This method calls the API to fetch the
@@ -964,7 +964,7 @@ class Cocos:
         Cocos Capital has a special Dolar Mep (closed price) venue with a warranted price.
 
         Returns:
-            Dict[str, Any]: API Response with the current value of the "Dólar MEP" exchange rate.
+            Dict[str, Any]: API Response with the current value of the "Dólar MEP" exchange rate. Open key returns "Precio Estimado", Close key returns "Precio Asegurado".
 
         Note:
             The structure and content of the returned dictionary may vary depending on the API response.
