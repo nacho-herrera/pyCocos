@@ -31,18 +31,19 @@ pyotp>=2.9.0
 ```
 ## Features
 
-This section describes the functionality and components of the library.
-
 #### Available Methods
 
 #### Initialization
 
-Before using the library, you need to initialize it with a valid email and password. The library includes the working webpage api_key token, but if that token is updated, you can find it using the browser dev-tools and pass it on initialization with the *api_key* parameter.
+Before using the library, you need to initialize it with a valid email and password. The library includes the working webpage API key token. If that token is updated, you can find it using the browser dev-tools and pass it on initialization with the api_key parameter.
 
 #### 2nd Factor Authentication
 
-On 4/13/2024 Cocos Capital implemented a 2nd factor authentication for all users. Different users may have SMS, Mail or TOTP app authentication. The library implements pyotp library for automatic code generation. To use that feature, topt secret key must be passed as parameters *topt_secret_key* parameter on initialization. If parameter is not passed, library will request code interactively. 
-If you have TOTP app activated, you can get your secret key using this [method](https://shieldplanet.com/extract-secret-keys-from-google-authenticator-qr-code/). Pyotp implementation was kindly developed by @El_Raulo on Telegram. 
+As of 4/13/2024, Cocos Capital has implemented second-factor authentication (2FA) for all users, offering options such as SMS, email, or TOTP (Time-Based One-Time Password) app authentication. This library incorporates the pyotp module for automated code generation. To utilize this feature, the TOTP secret key must be provided as the totp_secret_key parameter during initialization. If the parameter is not supplied, the library will prompt for the code interactively.
+
+For those with an activated TOTP app, you can retrieve your secret key using this method. If your account lacks Google Authenticator activation, it's advisable to scan the QR code first with a QR reader, note the URL, and then add it to the Google Authenticator app. The QR code typically contains a text resembling: otpauth://totp/app.cocos.capital:<your_email>?algorithm=SHA1&digits=6&issuer=app.cocos.capital&period=30&secret=<random_string>. The <random_string> within the URL is the TOTP secret key, which needs to be passed as the aforementioned parameter.
+
+The PyOTP implementation was graciously developed by @El_Raulo on Telegram.
 
 #### REST
 
@@ -95,7 +96,7 @@ The library also provides enumerations to help developers avoid errors and impro
 
 ## Usage
 
-Once the library has been installed, you can import and initialize it. The initialization sets the email, password, and reCAPTCHA token. It then attempts to authenticate with the provided credentials. If the authentication fails, an `ApiException` is thrown.
+Once the library has been installed, you can import and initialize it. The initialization sets the email and password. It then attempts to authenticate with the provided credentials. If the authentication fails, an `ApiException` is thrown.
 
 ```python
 from pycocos import Cocos
@@ -148,5 +149,5 @@ There is no official API documentation for this library. The library was created
 
 ## Acknowledgements
 
-This library was created with the support of the Scrappers Argentinos and Inversiones y Algoritmos Telegram Groups. 
-Updated version that includes OTP validation is based on the development and testing of @El_Raulo, @mjcolom and @sebivaq. Special thanks to them. 
+This library was created with the support of the Scrappers Argentinos and Inversiones y Algoritmos Telegram Groups.
+The updated version that includes OTP validation is based on the development and testing of @El_Raulo, @mjcolom, and @sebivaq. Special thanks to them.
