@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pyCocos",
-    version="0.2.3",
+    version="0.2.4",
     author="Nacho Herrera",
     author_email="github@nachoherrera.com.ar",
     description="Python connector for Cocos Capital's Rest APIs.",
@@ -17,6 +17,7 @@ setuptools.setup(
     install_requires=[
         'requests>=2.31.0',
         'simplejson>=3.19.1',
+        'pyotp>=2.9.0'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
