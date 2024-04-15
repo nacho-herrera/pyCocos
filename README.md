@@ -39,9 +39,9 @@ Before using the library, you need to initialize it with a valid email and passw
 
 #### 2nd Factor Authentication
 
-As of 4/13/2024, Cocos Capital has implemented second-factor authentication (2FA) for all users, offering options such as SMS, email, or TOTP (Time-Based One-Time Password) app authentication. This library incorporates the pyotp module for automated code generation. To utilize this feature, the TOTP secret key must be provided as the totp_secret_key parameter during initialization. If the parameter is not supplied, the library will prompt for the code interactively.
+As of 4/13/2024, Cocos Capital has implemented second-factor authentication (2FA) for all users, offering options such as SMS, email, or TOTP (Time-Based One-Time Password) app authentication. This library incorporates the PyOTP module for automated code generation. To utilize this feature, the TOTP secret key must be provided as the totp_secret_key parameter during initialization. If the parameter is not supplied, the library will prompt for the code interactively.
 
-For those with an activated TOTP app, you can retrieve your secret key using this method. If your account lacks Google Authenticator activation, it's advisable to scan the QR code first with a QR reader, note the URL, and then add it to the Google Authenticator app. The QR code typically contains a text resembling: otpauth://totp/app.cocos.capital:<your_email>?algorithm=SHA1&digits=6&issuer=app.cocos.capital&period=30&secret=<random_string>. The <random_string> within the URL is the TOTP secret key, which needs to be passed as the aforementioned parameter.
+For those with an activated TOTP app, you can retrieve your secret key using [this method](https://shieldplanet.com/extract-secret-keys-from-google-authenticator-qr-code/). If your Cocos Capital account lacks Google Authenticator activated, it's advisable to scan the QR code first with a QR reader, note the URI, and then add it to the Google Authenticator app. The QR code typically contains a text resembling: otpauth://totp/app.cocos.capital:<your_email>?algorithm=SHA1&digits=6&issuer=app.cocos.capital&period=30&secret=<random_string>. The <random_string> within the URL is the TOTP secret key, which needs to be passed as the aforementioned parameter.
 
 The PyOTP implementation was graciously developed by @El_Raulo on Telegram.
 
