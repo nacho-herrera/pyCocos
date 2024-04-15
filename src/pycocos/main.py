@@ -335,10 +335,17 @@ class Cocos:
         required_fields: list[tuple[str, Any, Any]]  = [("timeframe", timeframe, PerformanceTimeframe)]
         self._check_fields(required_fields)
 
-        if timeframe != self.performance_timeframes.RANGE:
+        if timeframe == self.performance_timeframes.DAILY:
             return self.client.get_daily_performance()
-        else:
+        elif timeframe == self.performance_timeframes.HISTORICAL:
+            return self.client.get_historic_performance()
+        elif timeframe == self.performance_timeframes.RANGE:
             return self.client.get_performance_period(date_from, date_to)
+        else:
+            raise ValueError(
+                f"Invalid timeframe: {timeframe}. Possible values are {self.performance_timeframes.DAILY}, "
+                f"{self.performance_timeframes.HISTORICAL}, and {self.performance_timeframes.RANGE}"
+            )
 
     def submit_new_bank_account(
         self, cbu: str, cuit: str, currency: Currency
