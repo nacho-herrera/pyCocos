@@ -112,8 +112,11 @@ class Cocos:
         
         self.client.update_session_headers(headers_update)
         second_factor_response = self.client.get_2factors()
-        if "requireChallenge" in second_factor_response.keys() and second_factor_response["requireChallenge"]:
+        #if "requireChallenge" in second_factor_response.keys() and second_factor_response["requireChallenge"]:
+        if "id" in second_factor_response.keys():
             challenge_id = second_factor_response["id"]
+        else:
+            raise Exception("Error: 2FA challenge not found in the API response, please share the broswer response on GitHub so i can implement this.")
         
         payload = json.dumps({
             "expires_at": 123, 
