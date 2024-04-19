@@ -1175,13 +1175,14 @@ class Cocos:
         Returns:
             str: The instrument code, or "" if not found.
         """
+        short_ticker = long_ticker.split("-")[0]
         ticker_search: List[Dict[str, Any]] = self.search_ticker(
-            long_ticker.split("-")[0]
+            short_ticker
         )
         for ticker in ticker_search:
             for subtype in ticker["instrument_subtypes"]:
                 for data in subtype["market_data"]:
-                    if data.get("long_ticker") == long_ticker:
+                    if data.get("short_ticker") == short_ticker:
                         return data["instrument_code"]
         return ""
 
