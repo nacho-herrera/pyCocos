@@ -76,7 +76,6 @@ class InstrumentSubType(Enum):
     USD = "NACIONALES_USD"
     BONOS_CORP = "BONOSC"
 
-
 class Settlement(Enum):
     """Enumerates the settlement options for trades in the application."""
 
