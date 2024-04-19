@@ -336,11 +336,11 @@ class RestClient:
         """
         return self.api_request(
             urls.endpoints["tickers_list"].format(
-                instrument_type.value,
-                instrumet_subtype.value,
-                settlement.value,
-                currency.value,
-                segment.value,
+                instrument_type,
+                instrumet_subtype,
+                settlement,
+                currency,
+                segment,
             )
         )
 
@@ -465,7 +465,7 @@ class RestClient:
             response = self.session.delete(self._api_url(path), json=json_data)
 
         if not response:
-            raise ApiException("Bad HTTP API Response")
+            raise ApiException(f"Bad HTTP API Response. Error code: {response.status_code}. Server response {response.text}")
 
         json_response = simplejson.loads(response.text)
 

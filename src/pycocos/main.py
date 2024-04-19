@@ -1107,7 +1107,7 @@ class Cocos:
         long_ticker: str = payload['long_ticker']
         instrument_code, settlement, segment, _, currency = long_ticker.split("-")
         
-        #instrument_code = self._find_instrument_code(long_ticker)
+        global_instrument_code = self._find_instrument_code(long_ticker)
         settlement = self._get_cocos_settlement(settlement)
         segment = self._get_cocos_segment(segment)
         
@@ -1128,12 +1128,12 @@ class Cocos:
         
         # check order total
         if "price" not in payload:
-            price = self._get_instrument_snapshot_value_by_key(instrument_code, long_ticker, segment, "ask")
+            price = self._get_instrument_snapshot_value_by_key(global_instrument_code, long_ticker, segment, "ask")
         else:
             price = payload["price"]
         
         if 'amount' not in payload.items():
-            price_factor = self._get_price_factor(instrument_code, long_ticker, segment)
+            price_factor = self._get_price_factor(global_instrument_code, long_ticker, segment)
             order_total = float(payload["quantity"]) * float(payload["price"]) / price_factor
         else:
             order_total = float(payload["amount"])
