@@ -261,7 +261,7 @@ class RestClient:
         Returns:
             dict: API Response
         """
-        return self.api_request(urls.endpoints["repo"], method="post", data=data)
+        return self.api_request(urls.endpoints["repo"], method="post", json_data=data)
 
     def get_buying_power(self) -> Dict[str, Any]:
         """Makes a request to get available money

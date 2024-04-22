@@ -563,14 +563,13 @@ class Cocos:
         self._check_fields(required_fields)
 
         # Create payload object
-        payload: str = json.dumps(
-            {
+        payload ={
                 "currency": currency.value,
                 "amount": amount,
                 "term": term,
                 "rate": rate,
             }
-        )
+        
 
         response: Dict[str, Any] = self.client.submit_repo_order(data=payload)
         return response
