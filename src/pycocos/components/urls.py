@@ -20,7 +20,7 @@ endpoints = {
     "new_dolar_mep": "api/v1/public/mep-prices",
     "home_list": "api/v1/markets/lists/home",
     "my_list": "api/v1/markets/lists/me",
-    "tickers_list": "api/v1/markets/lists/tickers/?instrument_type={}&instrument_subtype={}&settlement_days={}&currency={}&segment={}",
+    "tickers_list": "api/v1/markets/tickers/?instrument_type={}&instrument_subtype={}&settlement_days={}&currency={}&segment={}&page={}&size={}",
     "tickers_pagination": "api/v1/markets/lists/tickers-pagination?instrument_type={}&instrument_subtype={}&settlement_days={}&currency={}&segment={}&page={}&size={}",
     "historic_data": "api/v1/markets/tickers/{}/historic-data?date_from={}",
     "tickers": "api/v1/markets/tickers/{}?segment={}",

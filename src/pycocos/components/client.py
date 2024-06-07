@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 import requests
 import simplejson
 import datetime
+import cloudscraper
 
 from . import urls
 from .exceptions import ApiException
@@ -15,7 +16,7 @@ from .exceptions import ApiException
 
 class RestClient:
     def __init__(self):
-        self.session = requests.Session()
+        self.session = cloudscraper.CloudScraper()
         self.messages: List[Dict[str, str]] = []
 
     def get_token(self, params: str, data: str) -> Dict[str, Any]:
@@ -45,13 +46,13 @@ class RestClient:
             urls.endpoints["verify"].format(challenge_id), method="post", json_data=json
         )
 
-    def logout(self) -> None:
+    def logout(self, data: Dict[str, Any] = {}) -> None:
         """Makes a request to the api to logout current session
 
         Returns:
             dict: empty dict
         """
-        return self.api_request(urls.endpoints["logout"], method="post")
+        return self.api_request(urls.endpoints["logout"], method="post", json_data=data)
 
     def get_market_status(self) -> Dict[str, bool]:
         """Makes a request to the api to know if market is open
@@ -321,6 +322,8 @@ class RestClient:
         settlement: str,
         currency: str,
         segment: str,
+        size: int,
+        page: int,
     ) -> List[Dict[str, Any]]:
         """Makes a request to get instruments quote list information filtered by instrument type and subtype
 
@@ -341,6 +344,8 @@ class RestClient:
                 settlement,
                 currency,
                 segment,
+                size,
+                page,
             )
         )
 

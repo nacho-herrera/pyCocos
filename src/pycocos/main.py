@@ -77,7 +77,9 @@ class Cocos:
         
         self.headers = {
             "Apikey": self.api_key,
-            "Authorization": f"Bearer {self.api_key}"
+            "Authorization": f"Bearer {self.api_key}",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+            "Content-Type": "application/json"
         }
 
         ## Finally, tries to authenticate
@@ -115,6 +117,8 @@ class Cocos:
         headers_update: dict[str, str] = {
             "apikey": self.api_key,
             "authorization": f"Bearer {self.access_token}",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+            "Content-Type": "application/json"
         }
         
         self.client.update_session_headers(headers_update)
@@ -163,6 +167,8 @@ class Cocos:
             "authorization": f"Bearer {self.access_token}",
             #"recaptcha-token": self.recaptcha_token,
             "x-account-id": self.account_number,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+            "Content-Type": "application/json"
         }
         
         self.client.update_session_headers(headers_update)
@@ -190,7 +196,9 @@ class Cocos:
         
         headers_update = {
             "Apikey": self.api_key,
-            "Authorization": f"Bearer {self.api_key}"
+            "Authorization": f"Bearer {self.api_key}",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+            "Content-Type": "application/json"
         }
         self.client.update_session_headers(headers_update)
 
@@ -202,6 +210,8 @@ class Cocos:
             "authorization": f"Bearer {self.access_token}",
             #"recaptcha-token": self.recaptcha_token,
             "x-account-id": self.account_number,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+            "Content-Type": "application/json"
         }
         self.client.update_session_headers(headers_update)
 
@@ -216,7 +226,10 @@ class Cocos:
         """
 
         self.check_token_expiration()
-        self.client.logout()
+        data = {
+            "scope": "global"
+        }
+        self.client.logout(data=data)
         self.connected = False
 
     ###############
@@ -734,6 +747,8 @@ class Cocos:
         settlement: Settlement,
         currency: Currency,
         segment: Segment,
+        page: int = 1,
+        size: int = 50,
     ) -> List[Dict[str, Any]]:
         """Calls the API to retrieve a list of instruments based on specified criteria.
 
@@ -762,6 +777,8 @@ class Cocos:
             ("settlement", settlement, Settlement),
             ("currency", currency, Currency),
             ("segment", segment, Segment),
+            ("page", page, int),
+            ("size", size, int),
         ]
         self._check_fields(required_fields)
 
@@ -778,6 +795,8 @@ class Cocos:
             settlement.value,
             currency.value,
             segment.value,
+            page,
+            size,
         )
 
     def get_instrument_list_snapshot_paginated(
@@ -897,7 +916,7 @@ class Cocos:
         required_fields: list[tuple[str, Any, Any]]  = [("query", query, str)]
         self._check_fields(required_fields)
 
-        if len(query) < 2:
+        if len(query) < 1:
             raise ValueError("Query must be at least 2 characters long")
         self.check_token_expiration()        
         return self.client.search_tickers(query)
